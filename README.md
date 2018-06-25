@@ -1,2 +1,2 @@
 # go-kiteconnect
-Go Implementation of Zerodha KiteConnect Api
+Unofficial Go Implementation of Zerodha KiteConnect Api
