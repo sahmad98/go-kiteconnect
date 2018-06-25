@@ -3,7 +3,8 @@ package kiteconnect
 import (
 	"crypto/sha256"
 	"encoding/hex"
-	"io/ioutil"
+	"encoding/json"
+	// "io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
@@ -20,6 +21,7 @@ type KiteConnect struct {
 	LoginUrl     string
 	ApiBaseUrl   string
 	ErrorMsg     string
+	LoginResp    LoginResponse
 }
 
 func NewKiteConnect(api_key string) *KiteConnect {
@@ -59,8 +61,28 @@ func (k *KiteConnect) GenerateSession(request_token, api_secret string) error {
 		return err
 	}
 	log.Println(resp.Status)
-	resp_data, _ := ioutil.ReadAll(resp.Body)
+	// resp_data, _ := ioutil.ReadAll(resp.Body)
 	defer resp.Body.Close()
-	log.Println("Response: " + string(resp_data))
+
+	// log.Println(string(resp_data))
+	response := LoginResponse{}
+	decoder := json.NewDecoder(resp.Body)
+	if err := decoder.Decode(&response); err != nil {
+		log.Println("Unable to decode")
+		return err
+	}
+
+	if response.Status == "error" {
+		log.Println("Parsed Error")
+		log.Println(response.Message)
+		log.Println(response.Type)
+		return response
+	}
+
+	k.LoginResp = response
+	log.Printf("Access Token: %s", k.LoginResp.Data.AccessToken)
 	return nil
+}
+
+func (k *KiteConnect) GetUserProfile() LoginResponse {
 }
